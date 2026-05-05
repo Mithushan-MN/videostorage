@@ -29,53 +29,44 @@ require("dotenv").config();
 
 const app = express();
 
-// ====================== CORS CONFIGURATION ======================
+// ====================== CORS (Important for Vercel) ======================
+const allowedOrigins = [
+  "https://videostorage.vercel.app",   // ← Change to your actual frontend URL
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
 const corsOptions = {
-  origin: [
-    "https://videostorage-7xwu.vercel.app",           // Your backend (just in case)
-    process.env.FRONTEND_URL || "*",                  // Better to use env variable
-    "http://localhost:5173",                          // Vite dev server
-    "http://localhost:3000",                          // Common React port
-  ],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-  optionsSuccessStatus: 200,
-  maxAge: 86400, // 24 hours
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 
-// ====================== BODY PARSER ======================
+// Body parsers
 app.use(express.json({ limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 
-// ====================== MONGODB ======================
+// MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ MongoDB Error:", err));
 
-// ====================== ROUTES ======================
+// Routes
 app.use("/api", require("./routes/videoRoutes"));
 
-// Health check routes
-app.get("/", (req, res) => {
-  res.send("Backend is running ✅");
-});
+// Health checks
+app.get("/", (req, res) => res.send("Backend is running ✅"));
+app.get("/api/health", (req, res) => res.json({ status: "OK" }));
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", message: "Backend is healthy" });
-});
-
-// ====================== START SERVER ======================
-const PORT = process.env.PORT || 5000;
-
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  });
-} else {
-  console.log("✅ Serverless mode (Vercel)");
-}
-
+// ====================== EXPORT FOR VERCEL ======================
 module.exports = app;
