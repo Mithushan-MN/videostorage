@@ -12,8 +12,15 @@ const upload = multer({ storage });
    📥 UPLOAD ROUTE
 ========================= */
 router.post("/upload", upload.single("video"), async (req, res) => {
+    console.log("Upload request received!");
+  console.log("Body:", req.body);
+  console.log("File received:", !!req.file);
+  
   try {
     const userName = req.body.userName?.trim();
+    if (!userName || !req.file) {
+      return res.status(400).json({ error: "Missing name or video file" });
+    }
 
     const uploadToCloudinary = () =>
       new Promise((resolve, reject) => {

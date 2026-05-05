@@ -29,21 +29,23 @@ require("dotenv").config();
 
 const app = express();
 
-// CORS - Allow your frontend
+// ✅ CORS with your frontend
 const corsOptions = {
   origin: [
-    "https://videostorage.vercel.app",  
+    "https://videostorage.vercel.app",   // Your frontend
     "http://localhost:5173",
     "http://localhost:3000"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  maxAge: 86400
 };
 
 app.use(cors(corsOptions));
 
+// Important: Body parsers BEFORE routes
 app.use(express.json({ limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 
@@ -59,5 +61,4 @@ app.use("/api", require("./routes/videoRoutes"));
 app.get("/", (req, res) => res.send("Backend is running ✅"));
 app.get("/api/health", (req, res) => res.json({ status: "OK", message: "Healthy" }));
 
-// Export for Vercel
 module.exports = app;
