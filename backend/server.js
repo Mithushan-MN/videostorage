@@ -29,17 +29,33 @@ require("dotenv").config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// ====================== CORS CONFIGURATION ======================
+const corsOptions = {
+  origin: [
+    "https://videostorage-7xwu.vercel.app",           // Your backend (just in case)
+    process.env.FRONTEND_URL || "*",                  // Better to use env variable
+    "http://localhost:5173",                          // Vite dev server
+    "http://localhost:3000",                          // Common React port
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  maxAge: 86400, // 24 hours
+};
+
+app.use(cors(corsOptions));
+
+// ====================== BODY PARSER ======================
 app.use(express.json({ limit: "500mb" }));
 app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 
-// MongoDB Connection
+// ====================== MONGODB ======================
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ MongoDB Error:", err));
 
-// Routes
+// ====================== ROUTES ======================
 app.use("/api", require("./routes/videoRoutes"));
 
 // Health check routes
@@ -52,17 +68,13 @@ app.get("/api/health", (req, res) => {
 });
 
 // ====================== START SERVER ======================
-
 const PORT = process.env.PORT || 5000;
 
-// This allows the file to work both locally and on Vercel
 if (require.main === module) {
-  // Running locally
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 } else {
-  // Running on Vercel (serverless)
   console.log("✅ Serverless mode (Vercel)");
 }
 
