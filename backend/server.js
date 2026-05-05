@@ -33,7 +33,7 @@ const app = express();
 
 // ====================== CORS (Best Version) ======================
 const allowedOrigins = [
-  "https://videostorage.vercel.app",     // Your frontend
+  "https://videostorage.vercel.app",     // Your frontends
   "http://localhost:5173",
   "http://localhost:3000"
 ];
