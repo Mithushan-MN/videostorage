@@ -1,8 +1,11 @@
 // src/api.js
 import axios from "axios";
 
+import config from "./config";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://videostorage-7xwu.vercel.app/api'
+  baseURL: config.API_URL
 });
+
 
 export default api;
