@@ -40,11 +40,15 @@ export default function AdminDashboard() {
     return acc + filterVideosByDate(userDates).length;
   }, 0);
 
-  const downloadUserFiles = async (user, videos) => {
-  for (let i = 0; i < videos.length; i++) {
-    const file = videos[i];
+  const [downloadingUser, setDownloadingUser] = useState(null);
 
-    try {
+  const downloadUserFiles = async (user, videos) => {
+  setDownloadingUser(user);
+
+  try {
+    for (let i = 0; i < videos.length; i++) {
+      const file = videos[i];
+
       const response = await fetch(file.videoUrl);
       const blob = await response.blob();
 
@@ -63,9 +67,11 @@ export default function AdminDashboard() {
       window.URL.revokeObjectURL(url);
 
       await new Promise((resolve) => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error("Download failed:", error);
     }
+  } catch (error) {
+    console.error("Download failed:", error);
+  } finally {
+    setDownloadingUser(null);
   }
 };
 
@@ -147,10 +153,20 @@ export default function AdminDashboard() {
 
   <button
   onClick={() => downloadUserFiles(user, videos)}
-  className="flex items-center gap-2 px-3 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-zinc-200"
+  disabled={downloadingUser === user}
+  className="flex items-center gap-2 px-3 py-2 bg-white text-black rounded-lg text-sm font-semibold hover:bg-zinc-200 disabled:opacity-60 disabled:cursor-not-allowed"
 >
-  <Download className="w-4 h-4" />
-  Download All
+  {downloadingUser === user ? (
+    <>
+      <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+      Downloading...
+    </>
+  ) : (
+    <>
+      <Download className="w-4 h-4" />
+      Download All
+    </>
+  )}
 </button>
 </div>
 
